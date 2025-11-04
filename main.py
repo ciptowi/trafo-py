@@ -1,71 +1,70 @@
-from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
-from typing import List
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy import Column, Integer, String
-from typing import Optional
+from fastapi import FastAPI, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+import models, schemas
+from database import engine, SessionLocal
+from auth import router as auth_router, get_current_user
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+models.Base.metadata.create_all(bind=engine)
+app = FastAPI(title="FastAPI CRUD with JWT + Filters")
+app.include_router(auth_router)
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+# Dependency DB
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# CREATE
+@app.post("/items/", response_model=schemas.Item)
+def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    new_item = models.Item(**item.dict(), owner_id=current_user.id)
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    return new_item
 
-Base = declarative_base()
+# READ (with search + pagination)
+@app.get("/items/", response_model=list[schemas.Item])
+def read_items(
+    q: str | None = Query(None, description="Cari berdasarkan nama"),
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    query = db.query(models.Item).filter(models.Item.owner_id == current_user.id)
+    if q:
+        query = query.filter(models.Item.name.contains(q))
+    return query.offset(skip).limit(limit).all()
 
+# READ by ID
+@app.get("/items/{item_id}", response_model=schemas.Item)
+def read_item(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    item = db.query(models.Item).filter(models.Item.id == item_id, models.Item.owner_id == current_user.id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
 
-class User(Base):
-    __tablename__ = "users"
+# UPDATE
+@app.put("/items/{item_id}", response_model=schemas.Item)
+def update_item(item_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    db_item = db.query(models.Item).filter(models.Item.id == item_id, models.Item.owner_id == current_user.id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    for key, value in item.dict().items():
+        setattr(db_item, key, value)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String, nullable=False)
-
-
-class UserRead(BaseModel):
-    email: str
-
-
-class UserCreate(BaseModel):
-    email: str
-    password: str
-
-
-class UserUpdate(BaseModel):
-    email: Optional[str] = None
-    password: Optional[str] = None
-
-
-app = FastAPI()
-
-
-@app.on_event("startup")
-async def create_db_tables():
-    with engine.begin() as conn:
-        Base.metadata.create_all(bind=conn)
-
-
-@app.get("/users", response_model=List[UserRead])
-async def read_users(skip: int = 0, limit: int = 100, db: Session = Depends()):
-    users = db.query(User).offset(skip).limit(limit).all()
-    if not users:
-        raise HTTPException(status_code=404, detail="No users found")
-    return users
-
-@app.post("/login", response_model=UserRead)
-async def login_user(user: UserCreate, db: Session = Depends()):
-    user_obj = db.query(User).filter_by(email=user.email).first()
-    if not user_obj:
-        raise HTTPException(status_code=404, detail="User not found")
-    # if not verify_password(user.password, user_obj.hashed_password):
-    #     raise HTTPException(status_code=400, detail="Incorrect email or password")
-    return user_obj
-
-
-@app.post("/logout")
-async def logout_user():
-    pass
+# DELETE
+@app.delete("/items/{item_id}")
+def delete_item(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    db_item = db.query(models.Item).filter(models.Item.id == item_id, models.Item.owner_id == current_user.id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    db.delete(db_item)
+    db.commit()
+    return {"message": f"Item {item_id} deleted"}
