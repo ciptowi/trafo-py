@@ -10,6 +10,7 @@ class User(Base):
     password = Column(String)
 
     items = relationship("Item", back_populates="owner")
+    trafo = relationship("Trafo", back_populates="owner")
 
 class Item(Base):
     __tablename__ = "items"

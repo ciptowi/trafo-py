@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 import models, schemas
 from database import SessionLocal
 from utils import verify_password, hash_password, create_access_token, SECRET_KEY, ALGORITHM
+from response import response_ok
 
 router = APIRouter(tags=["auth"])
 
@@ -38,7 +39,7 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     if not user or not verify_password(form.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     access_token = create_access_token({"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return response_ok(data={"access_token": access_token, "token_type": "bearer"})
 
 # Auth dependency
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
