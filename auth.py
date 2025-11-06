@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
-import models, schemas
-from database import SessionLocal
+from database import SessionLocal, engine
 from utils import verify_password, hash_password, create_access_token, SECRET_KEY, ALGORITHM
 from response import response_ok
+
+import models, schemas
 
 router = APIRouter(tags=["auth"])
 
@@ -18,6 +19,9 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+# Create table 'user' when not exist
+models.Base.metadata.create_all(bind=engine, tables=[models.User.__table__])
 
 # Register
 @router.post("/register", response_model=schemas.User)
