@@ -20,7 +20,7 @@ def response_paginate(data=list[any], page=0, size=10, total=0, totalPage=0, mes
             "pagination": {
                 "page": page,
                 "size": size,
-                "totalElement": total,
+                "totalRecords": total,
                 "totalPage": totalPage
             }
         },

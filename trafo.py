@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from response import response_ok, response_paginate
 from database import SessionLocal, engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from auth import get_current_user
 
 import models, schemas
@@ -32,12 +32,13 @@ def create_trafo(trafo: schemas.TrafoCreate, db: Session = Depends(get_db), curr
 # READ ALL
 @router.get("/trafo/find-all", response_model=list[schemas.Trafo])
 def read_all_trafo(q: str | None = Query(None, description="Cari berdasarkan nama"),
-    page: int = 0,
-    size: int = 10,
+    groupId: int = Query(description="ID Group Trafo wajib"),
+    page: int = Query(0, description="Nomor halaman"),
+    size: int = Query(10, description="Jumlah data per halaman"),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    base_query = db.query(models.Trafo).filter(models.Trafo.owner_id == current_user.id)
+    base_query = db.query(models.Trafo).filter(models.Trafo.owner_id == current_user.id, models.Trafo.group_id == groupId)
     if q:
         base_query = base_query.filter(models.Trafo.name.contains(q))
     total = base_query.count()
@@ -47,12 +48,14 @@ def read_all_trafo(q: str | None = Query(None, description="Cari berdasarkan nam
     return response_paginate(data_for_response, page, size, total, totalPage)
 
 # READ BY ID
-@router.get("/trafo/find-one/{id}", response_model=schemas.Trafo)
+@router.get("/trafo/find-one/{id}", response_model=schemas.TrafoDetail)
 def read_trafo(id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    trafo = db.query(models.Trafo).filter(models.Trafo.id == id, models.Trafo.owner_id == current_user.id).first()
+    trafo = db.query(models.Trafo).options(joinedload(models.Trafo.group)).filter(models.Trafo.id == id, models.Trafo.owner_id == current_user.id).first()
     if not trafo:
         raise HTTPException(status_code=404, detail="Trafo not found")
-    return response_ok(data=trafo)
+    trafo_schema = schemas.TrafoDetail.model_validate(trafo)
+    trafo_data = trafo_schema.model_dump()
+    return response_ok(data=trafo_data)
 
 # UPDATE BY ID
 @router.post("/trafo/update/{id}", response_model=schemas.Trafo)

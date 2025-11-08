@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, ConfigDict
 
 # --- USER ---
 class UserBase(BaseModel):
@@ -33,6 +32,10 @@ class Trafo(TrafoBase):
     id: int
     class Config:
         from_attributes = True
+        
+class TrafoDetail(TrafoBase):
+    group: GroupTrafo | None = None
+    model_config = ConfigDict(from_attributes=True)
         
 # --- GROUP TRAFO ---
 class GroupTrafoBase(BaseModel):
