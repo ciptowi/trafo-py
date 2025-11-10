@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, Integer, String, ForeignKey
+from sqlalchemy import Column, DateTime, Float, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -40,6 +40,7 @@ class Trafo(Base):
 
     owner = relationship("User", back_populates="trafo")
     group = relationship("GroupTrafo", back_populates="trafo")
+    hasil_kalkulasi = relationship("HasilKalkulasi", back_populates="trafo")
 
 class GroupTrafo(Base):
     __tablename__ = "group_trafo"
@@ -49,3 +50,30 @@ class GroupTrafo(Base):
     kodegrup = Column(String, nullable=False)
     
     trafo = relationship("Trafo", back_populates="group")
+
+class HasilKalkulasi(Base):
+    __tablename__ = "hasil_kalkulasi"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_trafo = Column(Integer, ForeignKey("trafo.id"), nullable=False)
+    v_r = Column(Float, nullable=False)
+    v_s = Column(Float, nullable=False)
+    v_t = Column(Float, nullable=False)
+    i_r = Column(Float, nullable=False)
+    i_s = Column(Float, nullable=False)
+    i_t = Column(Float, nullable=False)
+    cosphi = Column(Float, nullable=False)
+    kv_r = Column(Float, nullable=True)
+    kv_s = Column(Float, nullable=True)
+    kv_t = Column(Float, nullable=True)
+    kw_r = Column(Float, nullable=True)
+    kw_s = Column(Float, nullable=True)
+    kw_t = Column(Float, nullable=True)
+    kvar_r = Column(Float, nullable=True)
+    kvar_s = Column(Float, nullable=True)
+    kvar_t = Column(Float, nullable=True)
+    sisa_kap = Column(Float, nullable=True)
+    waktu_kalkulasi = Column(DateTime, nullable=True)
+    tgl_upload = Column(DateTime, nullable=True)
+
+    trafo = relationship("Trafo", back_populates="hasil_kalkulasi")

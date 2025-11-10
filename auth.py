@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import APIKeyHeader, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
@@ -10,7 +10,7 @@ import models, schemas
 
 router = APIRouter(tags=["auth"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+api_key_header = APIKeyHeader(name="Authorization", auto_error=True)
 
 # Dependency DB
 def get_db():
@@ -38,7 +38,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 # Login
 @router.post("/login")
-def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(form: schemas.UserCreate, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.username == form.username).first()
     if not user or not verify_password(form.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -46,7 +46,7 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     return response_ok(data={"access_token": access_token, "token_type": "bearer"})
 
 # Auth dependency
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(token: str = Depends(api_key_header), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",

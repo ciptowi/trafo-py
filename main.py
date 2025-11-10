@@ -8,6 +8,7 @@ from response import response_err
 from auth import router as auth_router
 from trafo import router as trafo_router
 from group_trafo import router as group_trafo_router
+from hasil_kalkulasi import router as hasil_kalkulasi_router
 
 import models
 models.Base.metadata.create_all(bind=engine,checkfirst=True)
@@ -16,6 +17,7 @@ app = FastAPI(title="SMGD App - Documentation", version="1.0.0")
 app.include_router(auth_router)
 app.include_router(trafo_router)
 app.include_router(group_trafo_router)
+app.include_router(hasil_kalkulasi_router)
 
 # Daftar origin yang diizinkan
 origins = [
