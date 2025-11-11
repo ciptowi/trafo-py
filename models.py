@@ -32,6 +32,8 @@ class Trafo(Base):
     kapasitas = Column(Integer, nullable=False)
     voltase = Column(Integer, nullable=False)
     current = Column(Integer, nullable=False)
+    voltase_per = Column(Integer, nullable=False)
+    current_per = Column(Integer, nullable=False)
     phasa = Column(String, nullable=False)
     longitude = Column(Float, nullable=False)
     latitude = Column(Float, nullable=False)

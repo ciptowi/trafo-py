@@ -22,6 +22,8 @@ class TrafoBase(BaseModel):
     kapasitas: int
     voltase: int
     current: int
+    voltase_per: int
+    current_per: int
     phasa: str
     longitude: float
     latitude: float

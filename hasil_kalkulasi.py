@@ -27,7 +27,8 @@ models.Base.metadata.create_all(bind=engine, tables=[models.HasilKalkulasi.__tab
 
 @router.post("/kalkulasi/upload-csv")
 async def upload_hasil_kalkulasi(
-    id_trafo: int = Query(..., description="ID Trafo yang akan di-upload datanya"), 
+    id_trafo: int = Query(..., description="ID Trafo yang akan di-upload datanya"),
+    kapasitas: int = Query(..., description="Kapasitas Trafo"), 
     file: UploadFile = File(...), 
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_user)
@@ -190,7 +191,7 @@ async def upload_hasil_kalkulasi(
                 total_kvar = kvar_r_calc+kvar_s_calc+kvar_t_calc,
                 
                 # Hasil kalkulasi sisa kapasitas
-                sisa_kap = None,
+                sisa_kap = kapasitas - (kv_r_calc+kv_s_calc+kv_t_calc),
                 
                 cosphi=cosphi_float,
                 tgl_upload=tgl_upload,
