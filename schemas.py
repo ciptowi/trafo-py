@@ -74,6 +74,9 @@ class HasilKalkulasiBase(BaseModel):
     kvar_r: float
     kvar_s: float
     kvar_t: float
+    total_kva: float
+    total_kw: float
+    total_kvar: float
     sisakap: float
     waktu_kalkulasi: datetime
     tgl_upload: datetime

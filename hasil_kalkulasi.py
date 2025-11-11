@@ -141,7 +141,19 @@ async def upload_hasil_kalkulasi(
             if kv_t_calc is not None and cosphi_float is not None:
                 kw_t_calc = kv_t_calc * cosphi_float
                 
+            sin_phi = math.sqrt(1 - cosphi_float**2)
 
+            kvar_r_calc = None
+            if kv_r_calc is not None and cosphi_float is not None:
+                kvar_r_calc = kv_r_calc * sin_phi
+
+            kvar_s_calc = None
+            if kv_s_calc is not None and cosphi_float is not None:
+                kvar_s_calc = kv_s_calc * sin_phi
+
+            kvar_t_calc = None
+            if kv_t_calc is not None and cosphi_float is not None:
+                kvar_t_calc = kv_t_calc * sin_phi
             # --- TAHAP 4: Buat objek model ---
             new_data = models.HasilKalkulasi(
                 # Menggunakan 'id_trafo' sesuai variabel Anda
@@ -166,6 +178,19 @@ async def upload_hasil_kalkulasi(
                 kw_r = kw_r_calc,
                 kw_s = kw_s_calc,
                 kw_t = kw_t_calc,
+
+                # Hasil kalkulasi kvar
+                kvar_r = kv_r_calc * sin_phi,
+                kvar_s = kv_s_calc * sin_phi,
+                kvar_t = kv_t_calc * sin_phi,
+
+                # Total kalkulasi
+                total_kva = kv_r_calc+kv_s_calc+kv_t_calc,
+                total_kw = kw_r_calc+kw_s_calc+kw_t_calc,
+                total_kvar = kvar_r_calc+kvar_s_calc+kvar_t_calc,
+                
+                # Hasil kalkulasi sisa kapasitas
+                sisa_kap = None,
                 
                 cosphi=cosphi_float,
                 tgl_upload=tgl_upload,

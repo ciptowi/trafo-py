@@ -72,7 +72,10 @@ class HasilKalkulasi(Base):
     kvar_r = Column(Float, nullable=True)
     kvar_s = Column(Float, nullable=True)
     kvar_t = Column(Float, nullable=True)
-    sisa_kap = Column(Float, nullable=True)
+    total_kva = Column(Float, nullable=True)
+    total_kw = Column(Float, nullable=True)
+    total_kvar = Column(Float, nullable=True)
+    sisa_kap = Column(Float, nullable=True)        
     waktu_kalkulasi = Column(DateTime, nullable=True)
     tgl_upload = Column(DateTime, nullable=True)
 
