@@ -79,7 +79,7 @@ class HasilKalkulasiBase(BaseModel):
     total_kva: float
     total_kw: float
     total_kvar: float
-    sisakap: float
+    sisa_kap: float
     waktu_kalkulasi: datetime
     tgl_upload: datetime
 
@@ -88,5 +88,13 @@ class HasilKalkulasiCreate(HasilKalkulasiBase):
 
 class HasilKalkulasi(HasilKalkulasiBase):
     id: int
+    class Config:
+        from_attributes = True
+
+from typing import Optional
+
+class TrafoHasilKalkulasi(BaseModel):
+    trafo: Trafo
+    hasil_kalkulasi: Optional[HasilKalkulasi] = None
     class Config:
         from_attributes = True

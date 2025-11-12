@@ -219,3 +219,38 @@ async def upload_hasil_kalkulasi(
     return response_ok(
         message=f"Sukses! {len(new_hasil_kalkulasi)} baris data telah di-upload."
     )
+
+# Jangan lupa import
+from sqlalchemy.orm import joinedload 
+
+@router.get("/trafo/{trafo_id}/hasil-kalkulasi", response_model=schemas.TrafoHasilKalkulasi)
+def get_trafo_hasil_kalkulasi_by_id(trafo_id: int, db: Session = Depends(get_db)):
+    """
+    Get a single row of hasil_kalkulasi filtered by trafo_id and order by waktu_kalkulasi.
+    """
+    try:
+        hasil_kalkulasi = db.query(models.HasilKalkulasi).\
+            options(joinedload(models.HasilKalkulasi.trafo)).\
+            filter(models.HasilKalkulasi.id_trafo == trafo_id).\
+            order_by(models.HasilKalkulasi.waktu_kalkulasi.desc()).\
+            first()
+
+        if hasil_kalkulasi is None:
+            # Lebih baik gunakan 404 jika hasil kalkulasinya yang tidak ada,
+            # bukan trafonya
+            raise HTTPException(status_code=404, detail=f"Hasil kalkulasi for trafo id {trafo_id} not found")
+
+        # --- SOLUSI ---
+        # Buat skema respons secara manual, bukan pakai from_orm
+        data_respons = schemas.TrafoHasilKalkulasi(
+            trafo=hasil_kalkulasi.trafo,       # Ambil dari relationship
+            hasil_kalkulasi=hasil_kalkulasi    # Gunakan objek utamanya
+        )
+
+        return response_ok(
+            data=data_respons.model_dump(mode="json")
+        )
+
+    except Exception as e:
+        print(f"Error internal: {e}") # Tambahkan print untuk debugging
+        raise HTTPException(status_code=500, detail=f"Error internal: {e}")
