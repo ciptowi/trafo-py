@@ -45,6 +45,18 @@ def read_all_trafo_group(q: str | None = Query(None, description="Cari berdasark
     data_for_response = [schemas.GroupTrafo.model_validate(group).model_dump() for group in list_of_trafo_group_models]    
     return response_paginate(data_for_response, page, size, total, totalPage)
 
+# UPDATE GROUP TRAFO BY ID
+@router.post("/group-trafo/update/{id}", response_model=schemas.GroupTrafo)
+def update_group_trafo(id: int, group_trafo: schemas.GroupTrafoCreate, db: Session = Depends(get_db)):
+    db_group_trafo = db.query(models.GroupTrafo).filter(models.GroupTrafo.id == id).first()
+    if not db_group_trafo:
+        raise HTTPException(status_code=404, detail="Group Trafo not found")
+    for key, value in group_trafo.dict().items():
+        setattr(db_group_trafo, key, value)
+    db.commit()
+    db.refresh(db_group_trafo)
+    return response_ok(data=None, message="Group Trafo updated")
+
 # DELETE GROUP TRAFO BY ID
 @router.post("/group-trafo/delete/{id}")
 def delete_group_trafo_by_id(id: int, db: Session = Depends(get_db)):

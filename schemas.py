@@ -94,7 +94,7 @@ class HasilKalkulasi(HasilKalkulasiBase):
 from typing import Optional
 
 class TrafoHasilKalkulasi(BaseModel):
-    trafo: Trafo
+    trafo: TrafoDetail
     hasil_kalkulasi: Optional[HasilKalkulasi] = None
     class Config:
         from_attributes = True
