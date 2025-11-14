@@ -1,7 +1,7 @@
 import csv
 from  datetime import datetime
 import io
-from fastapi import Query, Depends, HTTPException, APIRouter, UploadFile
+from fastapi import Query, Depends, HTTPException, APIRouter, Response, UploadFile
 from fastapi.params import File
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
@@ -251,6 +251,93 @@ def get_trafo_hasil_kalkulasi_by_id(trafo_id: int, db: Session = Depends(get_db)
             data=data_respons.model_dump(mode="json")
         )
 
+    except Exception as e:
+        print(f"Error internal: {e}") # Tambahkan print untuk debugging
+        raise HTTPException(status_code=500, detail=f"Error internal: {e}")
+
+# Export to csv
+@router.get("/kalkulasi/export-csv/{trafo_id}", responses={
+    200: {"description": "Success export csv", "content": {"text/csv": {"example": ""}}},
+    404: {"description": "Trafo not found"}
+    })
+def export_csv_by_id_trafo(trafo_id: int, db: Session = Depends(get_db)):
+    """
+    Export csv data from hasil_kalkulasi filtered by trafo_id.
+    """
+    try:
+        trafo = db.query(models.Trafo).filter(models.Trafo.id == trafo_id).first()
+        if not trafo:
+            raise HTTPException(status_code=404, detail=f"Trafo not found")
+        
+        hasil_kalkulasi = db.query(models.HasilKalkulasi).\
+            filter(models.HasilKalkulasi.id_trafo == trafo_id).\
+            order_by(models.HasilKalkulasi.waktu_kalkulasi.desc()).\
+            limit(10).all()
+
+        if not hasil_kalkulasi:
+            raise HTTPException(status_code=404, detail=f"Hasil kalkulasi not found")
+
+        # Buat respons csv
+        csv_data = io.StringIO()
+        writer = csv.writer(csv_data)
+        writer.writerow([
+            "Trafo",
+            "Voltage R",
+            "Voltage S",
+            "Voltage T",
+            "Current R",
+            "Current S",
+            "Current T",
+            "Cosphi",
+            "KVA R",
+            "KVA S",
+            "KVA T",
+            "KW R",
+            "KW S",
+            "KW T",
+            "KVAr R",
+            "KVAr S",
+            "KVAr T",
+            "Total KVA",
+            "Total KW",
+            "Total KVAr",
+            "Sisa Kapacitas",
+            "Datetime",
+        ])
+        for row in hasil_kalkulasi:
+            writer.writerow([
+                trafo.name,
+                row.v_r,
+                row.v_s,
+                row.v_t,
+                row.i_r,
+                row.i_s,
+                row.i_t,
+                row.cosphi,
+                row.kv_r,
+                row.kv_s,
+                row.kv_t,
+                row.kw_r,
+                row.kw_s,
+                row.kw_t,
+                row.kvar_r,
+                row.kvar_s,
+                row.kvar_t,
+                row.total_kva,
+                row.total_kw,
+                row.total_kvar,
+                row.sisa_kap,
+                row.waktu_kalkulasi,
+            ])
+        csv_data.seek(0) # Kembali ke awal
+
+        filename = f"hasil_kalkulasi_{trafo.name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        headers = {
+            "Content-Disposition": f"attachment; filename={filename}",
+            "Content-Type": "text/csv"
+        }
+        return Response(content=csv_data.getvalue(), headers=headers, media_type="text/csv")
+    
     except Exception as e:
         print(f"Error internal: {e}") # Tambahkan print untuk debugging
         raise HTTPException(status_code=500, detail=f"Error internal: {e}")

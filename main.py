@@ -31,6 +31,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],          # izinkan semua method (GET, POST, dll)
     allow_headers=["*"],          # izinkan semua header
+    expose_headers=["Content-Disposition", "Filename", "X-Custom-Header"],
 )
 
 # Tangani HTTPException (seperti 401, 404, dll)
