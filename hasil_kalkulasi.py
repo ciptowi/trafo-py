@@ -171,19 +171,19 @@ async def upload_hasil_kalkulasi(
                 i_t=i_t_float,
                 
                 # Hasil kalkulasi kVA
-                kv_r = kv_r_calc,
-                kv_s = kv_s_calc,
-                kv_t = kv_t_calc,
+                kv_r = kv_r_calc/1000,
+                kv_s = kv_s_calc/1000,
+                kv_t = kv_t_calc/1000,
                 
                 # Hasil kalkulasi kW (BARU)
-                kw_r = kw_r_calc,
-                kw_s = kw_s_calc,
-                kw_t = kw_t_calc,
+                kw_r = kw_r_calc/1000,
+                kw_s = kw_s_calc/1000,
+                kw_t = kw_t_calc/1000,
 
                 # Hasil kalkulasi kvar
-                kvar_r = kv_r_calc * sin_phi,
-                kvar_s = kv_s_calc * sin_phi,
-                kvar_t = kv_t_calc * sin_phi,
+                kvar_r = kv_r_calc * sin_phi/1000,
+                kvar_s = kv_s_calc * sin_phi/1000,
+                kvar_t = kv_t_calc * sin_phi/1000,
 
                 # Total kalkulasi
                 total_kva = kv_r_calc+kv_s_calc+kv_t_calc,
