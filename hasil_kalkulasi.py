@@ -116,15 +116,15 @@ async def upload_hasil_kalkulasi(
             
             kv_r_calc = None
             if v_r_float is not None and i_r_float is not None:
-                kv_r_calc = v_r_float * i_r_float
+                kv_r_calc = v_r_float * i_r_float/1000
 
             kv_s_calc = None
             if v_s_float is not None and i_s_float is not None:
-                kv_s_calc = v_s_float * i_s_float
+                kv_s_calc = v_s_float * i_s_float/1000
 
             kv_t_calc = None
             if v_t_float is not None and i_t_float is not None:
-                kv_t_calc = v_t_float * i_t_float
+                kv_t_calc = v_t_float * i_t_float/1000
 
                 
             # --- TAHAP 3: Hitung kW (Real Power) sesuai permintaan Anda ---
@@ -171,19 +171,19 @@ async def upload_hasil_kalkulasi(
                 i_t=i_t_float,
                 
                 # Hasil kalkulasi kVA
-                kv_r = kv_r_calc/1000,
-                kv_s = kv_s_calc/1000,
-                kv_t = kv_t_calc/1000,
+                kv_r = kv_r_calc,
+                kv_s = kv_s_calc,
+                kv_t = kv_t_calc,
                 
                 # Hasil kalkulasi kW (BARU)
-                kw_r = kw_r_calc/1000,
-                kw_s = kw_s_calc/1000,
-                kw_t = kw_t_calc/1000,
+                kw_r = kw_r_calc,
+                kw_s = kw_s_calc,
+                kw_t = kw_t_calc,
 
                 # Hasil kalkulasi kvar
-                kvar_r = kv_r_calc * sin_phi/1000,
-                kvar_s = kv_s_calc * sin_phi/1000,
-                kvar_t = kv_t_calc * sin_phi/1000,
+                kvar_r = kv_r_calc * sin_phi,
+                kvar_s = kv_s_calc * sin_phi,
+                kvar_t = kv_t_calc * sin_phi,
 
                 # Total kalkulasi
                 total_kva = kv_r_calc+kv_s_calc+kv_t_calc,
