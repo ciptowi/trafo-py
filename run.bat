@@ -21,6 +21,6 @@ python -m pip install fastapi uvicorn
 :: --- jalankan server FastAPI ---
 echo 🚀 Menjalankan FastAPI di http://127.0.0.1:8000/docs ...
 echo (Tekan CTRL+C untuk berhenti)
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 
 endlocal

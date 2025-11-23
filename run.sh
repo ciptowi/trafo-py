@@ -19,5 +19,6 @@ if ! command -v uvicorn &> /dev/null; then
 fi
 
 # --- jalankan server FastAPI ---
-echo "🚀 Menjalankan FastAPI di http://127.0.0.1:8000 ..."
-uvicorn main:app --reload
+echo "🚀 Menjalankan FastAPI di http://127.0.0.1:8000  atau Lihat Dokumentasi API di http://127.0.0.1:8000/docs ..."
+echo "(Tekan CTRL+C untuk berhenti)"
+uvicorn app.main:app --reload

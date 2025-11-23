@@ -1,1 +1,5 @@
-/__pycache__
+# Mengabaikan folder __pycache__ di mana pun ia muncul
+**/__pycache__/
+
+# Mengabaikan semua file .pyc (file kompilasi Python) di mana pun mereka berada
+**/*.pyc
