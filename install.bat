@@ -5,7 +5,7 @@ IF EXIST .venv (
 )
 
 echo --- 2. Membuat Virtual Environment baru ---
-python -m venv .venv
+python3.11 -m venv .venv
 
 echo --- 3. Mengaktifkan Environment ---
 call .\.venv\Scripts\activate.bat

@@ -1,14 +1,13 @@
-from fastapi import Query, HTTPException, Response, UploadFile
-from fastapi.params import File
-from sqlalchemy.orm import Session, joinedload 
-from database import engine
+from fastapi import HTTPException, Response, UploadFile
+from sqlalchemy.orm import Session, joinedload
+from app.core.database import engine
 from datetime import datetime
 
 from app.core.database import Base
 from app.dependencies.response import response_ok
 from app.models.trafo_model import Trafo
 from app.models.hasil_kalkulasi_model import HasilKalkulasi
-from app.schemas.hasil_kalkulasi_scema import HasilKalkulasi as HasilKalkulasiSchema
+from app.schemas.hasil_kalkulasi_scema import TrafoHasilKalkulasi
 
 import io
 import csv
@@ -17,12 +16,7 @@ import math
 # Create table 'group trafo' when not exist
 Base.metadata.create_all(bind=engine, tables=[HasilKalkulasi.__table__])
 
-async def upload_hasil_kalkulasi(
-    db: Session, 
-    id_trafo: int = Query(..., description="ID Trafo yang akan di-upload datanya"),
-    kapasitas: int = Query(..., description="Kapasitas Trafo"), 
-    file: UploadFile = File(...), 
-):
+async def upload_hasil_kalkulasi(id_trafo: int, kapasitas: int, file: UploadFile, db: Session):
     
     tgl_upload = datetime.now()
 
@@ -210,8 +204,6 @@ async def upload_hasil_kalkulasi(
         message=f"Sukses! {len(new_hasil_kalkulasi)} baris data telah di-upload."
     )
 
-# Jangan lupa import
-
 def get_trafo_hasil_kalkulasi_by_id(trafo_id: int, db: Session):
     """
     Get a single row of hasil_kalkulasi filtered by trafo_id and order by waktu_kalkulasi.
@@ -230,7 +222,7 @@ def get_trafo_hasil_kalkulasi_by_id(trafo_id: int, db: Session):
 
         # --- SOLUSI ---
         # Buat skema respons secara manual, bukan pakai from_orm
-        data_respons = HasilKalkulasiSchema(
+        data_respons = TrafoHasilKalkulasi(
             trafo=hasil_kalkulasi.trafo,       # Ambil dari relationship
             hasil_kalkulasi=hasil_kalkulasi    # Gunakan objek utamanya
         )

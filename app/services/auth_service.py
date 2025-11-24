@@ -1,8 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from database import engine
 
-from app.core.database import Base
+from app.core.database import Base, engine
 from app.dependencies.auth import create_access_token
 from app.dependencies.response import response_ok
 from app.dependencies.cryptography import verify_password, hash_password

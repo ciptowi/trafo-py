@@ -1,8 +1,7 @@
 from fastapi import Query, HTTPException
 from sqlalchemy.orm import Session
-from database import engine
 
-from app.core.database import Base
+from app.core.database import Base, engine
 from app.dependencies.response import response_ok, response_paginate
 from app.models.group_trafo_model import GroupTrafo
 from app.schemas.group_trafo_scema import GroupTrafoCreate, GroupTrafoCombobox, GroupTrafo as GroupTrafoSchema

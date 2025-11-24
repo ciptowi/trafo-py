@@ -6,3 +6,7 @@ python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
 alembic
+pandas
+numpy
+scikit-learn
+tensorflow

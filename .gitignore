@@ -3,3 +3,6 @@
 
 # Mengabaikan semua file .pyc (file kompilasi Python) di mana pun mereka berada
 **/*.pyc
+
+# Mengabaikan .vnev
+.venv

@@ -1,8 +1,7 @@
 from fastapi import HTTPException, Query
-from database import engine
 from sqlalchemy.orm import Session, joinedload
 
-from app.core.database import Base
+from app.core.database import Base, engine
 from app.dependencies.response import response_ok, response_paginate
 from app.models.trafo_model import Trafo
 from app.schemas.trafo_scema import TrafoCreate, Trafo as TrafoSchema, TrafoDetail

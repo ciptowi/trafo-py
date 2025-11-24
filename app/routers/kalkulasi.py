@@ -15,7 +15,7 @@ async def upload_hasil_kalkulasi(
     file: UploadFile = File(...), 
     db: Session = Depends(get_db), 
 ):
-    return kalkulasi_service.upload_hasil_kalkulasi(id_trafo=id_trafo, kapasitas=kapasitas, file=file, db=db)
+    return await kalkulasi_service.upload_hasil_kalkulasi(id_trafo=id_trafo, kapasitas=kapasitas, file=file, db=db)
 
 @router.get("/trafo/{trafo_id}/hasil-kalkulasi", response_model=TrafoHasilKalkulasi)
 def get_trafo_hasil_kalkulasi_by_id(trafo_id: int, db: Session = Depends(get_db)):
