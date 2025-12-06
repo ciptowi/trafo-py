@@ -5,7 +5,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.database import engine, Base
 from app.dependencies.response import response_err
-from app.routers import auth, group_trafo, trafo, kalkulasi, forecast
+from app.routers import auth, group_trafo, trafo, kalkulasi, forecast, dashboard
 
 Base.metadata.create_all(bind=engine,checkfirst=True)
 
@@ -15,6 +15,7 @@ app.include_router(group_trafo.router)
 app.include_router(trafo.router)
 app.include_router(kalkulasi.router)
 app.include_router(forecast.router)
+app.include_router(dashboard.router)
 
 # Daftar origin yang diizinkan
 origins = [

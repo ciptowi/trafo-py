@@ -26,3 +26,13 @@ class Trafo(TrafoBase):
 class TrafoDetail(TrafoBase):
     group: GroupTrafo | None = None
     model_config = ConfigDict(from_attributes=True)
+    
+class TrafoDashboard(BaseModel):
+    id: int
+    name: str
+    kapasitas: int
+    
+class TrafoListDashboard(TrafoDashboard):
+    group: GroupTrafo | None = None
+    model_config = ConfigDict(from_attributes=True)
+    
