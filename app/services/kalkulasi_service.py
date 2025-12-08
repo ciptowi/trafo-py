@@ -12,6 +12,7 @@ from app.schemas.hasil_kalkulasi_scema import TrafoHasilKalkulasi
 import io
 import csv
 import math
+import pandas as pd
 
 # Create table 'group trafo' when not exist
 Base.metadata.create_all(bind=engine, tables=[HasilKalkulasi.__table__])
@@ -209,6 +210,155 @@ async def upload_hasil_kalkulasi(id_trafo: int, kapasitas: int, file: UploadFile
     # 5. Kembalikan respons sukses
     return response_ok(
         message=f"Sukses! {len(new_hasil_kalkulasi)} baris data telah di-upload."
+    )
+
+async def upload_hasil_kalkulasi2(id_trafo: int, kapasitas: int, file: UploadFile, db: Session):
+
+    tgl_upload = datetime.now()
+
+    # 1. Baca file mentah
+    contents = await file.read()
+    try:
+        contents_str = contents.decode('utf-8')
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Encoding file bukan UTF-8.")
+        
+    file_stream = io.StringIO(contents_str)
+
+    # ---- PANDAS: Baca CSV ke DataFrame ----
+    try:
+        df = pd.read_csv(file_stream)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"CSV tidak valid: {e}")
+
+    # Pastikan kolom Datetime ada
+    if 'Datetime' not in df.columns:
+        raise HTTPException(status_code=400, detail="Kolom 'Datetime' tidak ditemukan.")
+
+    # 2. Ubah kolom datetime jadi datetime object
+    df['Datetime'] = pd.to_datetime(df['Datetime'])
+
+    # 3. Ambil tanggal saja
+    df['Date'] = df['Datetime'].dt.date
+
+    # 4. Ambil baris maksimum per hari berdasarkan Import Wh
+    daily_max = df.loc[df.groupby("Date")['Import Wh'].idxmax()].reset_index(drop=True)
+
+    # 5. Ubah ke list of dict untuk loop Anda
+    data_list = daily_max.to_dict(orient='records')
+
+    if not data_list:
+        raise HTTPException(status_code=400, detail="CSV kosong setelah filter harian.")
+
+    # Fungsi helper konversi ke float
+    def _to_float_or_none(val):
+        if val is None or val == "":
+            return None
+        try:
+            return float(str(val).replace(",", "."))
+        except:
+            return None
+
+    new_hasil_kalkulasi = []
+
+    # === LOOP BARU: hanya data harian yang sudah difilter ===
+    for idx, row in enumerate(data_list):
+
+        try:
+            datetime_obj = row['Datetime']
+
+            # ambil semua data CSV
+            importwh_float = _to_float_or_none(row.get('Import Wh'))
+            exportwh_float = _to_float_or_none(row.get('Export Wh'))
+            importvarh_float = _to_float_or_none(row.get('Import VArh'))
+            exportvarh_float = _to_float_or_none(row.get('Export VArh'))
+
+            v_r_float = _to_float_or_none(row.get('Voltage R'))
+            v_s_float = _to_float_or_none(row.get('Voltage S'))
+            v_t_float = _to_float_or_none(row.get('Voltage T'))
+
+            i_r_float = _to_float_or_none(row.get('Ampere R'))
+            i_s_float = _to_float_or_none(row.get('Ampere S'))
+            i_t_float = _to_float_or_none(row.get('Ampere T'))
+
+            cosphi_float = _to_float_or_none(row.get('Cosphi'))
+
+            # HITUNG kVA
+            kv_r = v_r_float * i_r_float / 1000 if v_r_float and i_r_float else None
+            kv_s = v_s_float * i_s_float / 1000 if v_s_float and i_s_float else None
+            kv_t = v_t_float * i_t_float / 1000 if v_t_float and i_t_float else None
+
+            # HITUNG kW
+            kw_r = kv_r * cosphi_float if kv_r and cosphi_float else None
+            kw_s = kv_s * cosphi_float if kv_s and cosphi_float else None
+            kw_t = kv_t * cosphi_float if kv_t and cosphi_float else None
+
+            # HITUNG kvar
+            sin_phi = math.sqrt(1 - cosphi_float**2) if cosphi_float else None
+
+            kvar_r = kv_r * sin_phi if kv_r and sin_phi else None
+            kvar_s = kv_s * sin_phi if kv_s and sin_phi else None
+            kvar_t = kv_t * sin_phi if kv_t and sin_phi else None
+
+            total_kva = (kv_r or 0) + (kv_s or 0) + (kv_t or 0)
+            total_kw = (kw_r or 0) + (kw_s or 0) + (kw_t or 0)
+            total_kvar = (kvar_r or 0) + (kvar_s or 0) + (kvar_t or 0)
+
+            sisa_kap = kapasitas - total_kva if total_kva else None
+
+            new_row = HasilKalkulasi(
+                id_trafo=id_trafo,
+                waktu_kalkulasi=datetime_obj,
+
+                importwh=importwh_float,
+                exportwh=exportwh_float,
+                importvarh=importvarh_float,
+                exportvarh=exportvarh_float,
+
+                v_r=v_r_float,
+                v_s=v_s_float,
+                v_t=v_t_float,
+
+                i_r=i_r_float,
+                i_s=i_s_float,
+                i_t=i_t_float,
+
+                kv_r=kv_r,
+                kv_s=kv_s,
+                kv_t=kv_t,
+
+                kw_r=kw_r,
+                kw_s=kw_s,
+                kw_t=kw_t,
+
+                kvar_r=kvar_r,
+                kvar_s=kvar_s,
+                kvar_t=kvar_t,
+
+                total_kva=total_kva,
+                total_kw=total_kw,
+                total_kvar=total_kvar,
+
+                sisa_kap=sisa_kap,
+                cosphi=cosphi_float,
+                tgl_upload=tgl_upload
+            )
+
+            new_hasil_kalkulasi.append(new_row)
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+    # SIMPAN
+    try:
+        db.add_all(new_hasil_kalkulasi)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Gagal menyimpan ke database: {e}")
+
+    return response_ok(
+        message=f"Sukses! {len(new_hasil_kalkulasi)} data harian berhasil disimpan."
     )
 
 def get_trafo_hasil_kalkulasi_by_id(trafo_id: int, db: Session):
