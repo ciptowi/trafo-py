@@ -4,6 +4,10 @@ from typing import Optional
 from app.schemas.trafo_scema import TrafoDetail
 
 class HasilKalkulasiBase(BaseModel):
+    importwh: float
+    exportwh: float
+    importvarh: float
+    exportvarh: float
     v_r: float
     v_s: float
     v_t: float

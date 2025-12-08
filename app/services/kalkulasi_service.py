@@ -83,7 +83,10 @@ async def upload_hasil_kalkulasi(id_trafo: int, kapasitas: int, file: UploadFile
 
             
             # --- TAHAP 1: Ambil semua nilai float dari CSV ---
-            
+            importwh_float = _to_float_or_none(row.get('Import Wh'))
+            exportwh_float = _to_float_or_none(row.get('Export Wh'))
+            importvarh_float = _to_float_or_none(row.get('Import VArh'))
+            exportvarh_float = _to_float_or_none(row.get('Export VArh'))
             v_r_float = _to_float_or_none(row.get('Voltage R'), is_voltage=True)
             v_s_float = _to_float_or_none(row.get('Voltage S'), is_voltage=True)
             v_t_float = _to_float_or_none(row.get('Voltage T'), is_voltage=True)
@@ -145,6 +148,10 @@ async def upload_hasil_kalkulasi(id_trafo: int, kapasitas: int, file: UploadFile
                 id_trafo=id_trafo, 
                 
                 waktu_kalkulasi=datetime_obj,
+                importwh=importwh_float,
+                exportwh=exportwh_float,
+                importvarh=importvarh_float,
+                exportvarh=exportvarh_float,    
                 
                 v_r=v_r_float,
                 v_s=v_s_float,

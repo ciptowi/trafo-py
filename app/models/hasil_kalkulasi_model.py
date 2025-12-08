@@ -7,6 +7,10 @@ class HasilKalkulasi(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     id_trafo = Column(Integer, ForeignKey("trafo.id"), nullable=False)
+    importwh = Column(Float, nullable=False)
+    exportwh = Column(Float, nullable=False)
+    importvarh = Column(Float, nullable=False)
+    exportvarh = Column(Float, nullable=False)
     v_r = Column(Float, nullable=False)
     v_s = Column(Float, nullable=False)
     v_t = Column(Float, nullable=False)
