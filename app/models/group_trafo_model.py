@@ -10,3 +10,4 @@ class GroupTrafo(Base):
     kodegrup = Column(String, nullable=False)
     
     trafo = relationship("Trafo", back_populates="group")
+    users = relationship("User", back_populates="group")

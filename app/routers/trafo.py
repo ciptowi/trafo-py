@@ -10,7 +10,7 @@ router = APIRouter(tags=["trafo"])
 
 @router.post("/trafo/save", response_model=Trafo)
 def create_trafo(trafo: TrafoCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return trafo_service.create_trafo(trafo=trafo, db=db, user_id=current_user.id)
+    return trafo_service.create_trafo(trafo=trafo, db=db, user=current_user)
 
 @router.get("/trafo/find-all", response_model=list[Trafo])
 def read_all_trafo(q: str | None = Query(None, description="Cari berdasarkan nama"),
@@ -20,16 +20,17 @@ def read_all_trafo(q: str | None = Query(None, description="Cari berdasarkan nam
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    return trafo_service.read_all_trafo(user_id=current_user.id, db=db, q=q, groupId=groupId, page=page, size=size)
+    # note: groupId ambil dari user
+    return trafo_service.read_all_trafo(db=db, q=q, groupId=groupId, page=page, size=size, user=current_user)
 
 @router.get("/trafo/find-one/{id}", response_model=TrafoDetail)
 def read_trafo(id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return trafo_service.read_trafo(id=id, db=db, user_id=current_user.id)
+    return trafo_service.read_trafo(id=id, db=db, user=current_user)
 
 @router.post("/trafo/update/{id}", response_model=Trafo)
 def update_trafo(id: int, trafo: TrafoCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return trafo_service.update_trafo(id=id, trafo=trafo, db=db, user_id=current_user.id)
+    return trafo_service.update_trafo(id=id, trafo=trafo, db=db, user=current_user)
 
 @router.post("/trafo/delete/{id}")
 def delete_trafo_by_id(id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return trafo_service.delete_trafo_by_id(id=id, db=db, user_id=current_user.id)
+    return trafo_service.delete_trafo_by_id(id=id, db=db, user=current_user)

@@ -1,6 +1,6 @@
 import math
 from fastapi import HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import Base, engine
 from app.dependencies.response import response_ok, response_paginate
@@ -16,7 +16,7 @@ def create_user(user: UserCreate, db: Session):
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     hashed_pw = hash_password(user.password)
-    new_user = User(username=user.username, password=hashed_pw)
+    new_user = User(username=user.username, password=hashed_pw, group_id=user.group_id)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -34,7 +34,7 @@ def get_all_user(db: Session, q: str | None = Query(None, description="Cari berd
     page: int = Query(0, description="Nomor halaman"),
     size: int = Query(10, description="Jumlah data per halaman"),
 ):
-    base_query = db.query(User)
+    base_query = db.query(User).options(joinedload(User.group))
     if q:
         base_query = base_query.filter(User.username.contains(q))
     total = base_query.count()

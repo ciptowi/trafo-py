@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -8,5 +8,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     password = Column(String)
-
-    trafo = relationship("Trafo", back_populates="owner")
+    group_id = Column(Integer, ForeignKey("group_trafo.id"), nullable=True)
+    
+    group = relationship("GroupTrafo", back_populates="users")

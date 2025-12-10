@@ -22,8 +22,6 @@ def total_trafo_per_group_trafo(db: Session):
 
 def list_all_trafo(db: Session):
     trafo = db.query(Trafo).options(joinedload(Trafo.group)).all()
-    if not trafo:
-        raise HTTPException(status_code=404, detail="Trafo not found")
     trafo_schema = [TrafoListDashboard.model_validate(t, from_attributes=True) for t in trafo]
     trafo_data = [t.model_dump() for t in trafo_schema]
     return response_ok(data=trafo_data)
