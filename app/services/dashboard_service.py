@@ -34,10 +34,10 @@ def forecast_vs_actual(id: int, db: Session):
         raise HTTPException(status_code=404, detail="Trafo not found")
     forecast_results = db.query(HasilForecast).filter(HasilForecast.id_trafo == id).limit(20).all()
     if not forecast_results:
-        raise HTTPException(status_code=404, detail="Trafo not found")
+        raise HTTPException(status_code=404, detail="Trafo Forecast not found")
     calculated_results = db.query(HasilKalkulasi).filter(HasilKalkulasi.id_trafo == id).limit(20).all()
     if not calculated_results:
-        raise HTTPException(status_code=404, detail="Trafo not found")
+        raise HTTPException(status_code=404, detail="Trafo Calculated not found")
     
     trafo_name = trafo.name
     forecast_list = []
@@ -54,7 +54,7 @@ def forecast_vs_actual(id: int, db: Session):
         tanggal_str = datetime.strftime(item.waktu_kalkulasi, "%Y-%m-%d %H:%M:%S")
         calculated_list.append({
             "datetime": tanggal_str, 
-            "value": (item.sisa_kap / trafo.kapasitas),
+            "value": (item.importwh / item.cosphi),
         })
     
     result = {
