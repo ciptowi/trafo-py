@@ -28,9 +28,6 @@ def can_view_all_group(user: User) -> bool:
     if gid == "":
         return True
 
-    if "UP3" in gid:
-        return True
-
     return False
 
 def create_group_trafo(group_trafo: GroupTrafoCreate, db: Session):
