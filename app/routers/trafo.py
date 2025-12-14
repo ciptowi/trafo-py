@@ -3,14 +3,25 @@ from sqlalchemy.orm import Session
 
 from app.dependencies.auth import get_current_user
 from app.core.database import get_db
+from app.models.user_model import User
 from app.schemas.trafo_scema import TrafoCreate, Trafo, TrafoDetail
 from app.services import trafo_service
 
 router = APIRouter(tags=["trafo"])
 
-@router.post("/trafo/save", response_model=Trafo)
-def create_trafo(trafo: TrafoCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    return trafo_service.create_trafo(trafo=trafo, db=db, user=current_user)
+@router.post("/trafo/save")
+def create_trafo(
+    trafo: TrafoCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return trafo_service.create_trafo(
+        trafo=trafo,
+        db=db,
+        user=current_user
+    )
+
+
 
 @router.get("/trafo/find-all", response_model=list[Trafo])
 def read_all_trafo(q: str | None = Query(None, description="Cari berdasarkan nama"),

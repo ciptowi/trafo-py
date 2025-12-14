@@ -12,14 +12,31 @@ import math
 # Create table 'trafo' when not exist
 Base.metadata.create_all(bind=engine, tables=[Trafo.__table__])
 
-def create_trafo(trafo: TrafoCreate, db: Session, user: User):
-    if user.group_id != trafo.group_id:
+def create_trafo(
+    trafo: TrafoCreate,
+    db: Session,
+    user: User
+):
+    # admin boleh semua
+    if user.username.lower() == "admin":
+        pass
+
+    # user group_id NULL → boleh semua
+    elif user.group_id is None:
+        pass
+
+    # user biasa → hanya group sendiri
+    elif user.group_id != trafo.group_id:
         raise HTTPException(status_code=403, detail="Forbidden")
-    new_trafo = Trafo(**trafo.dict())
+
+    new_trafo = Trafo(**trafo.model_dump())
     db.add(new_trafo)
     db.commit()
     db.refresh(new_trafo)
-    return response_ok(data=None, message="Trafo created")
+
+    return response_ok(message="Trafo created")
+
+
 
 def read_all_trafo(user: User,db: Session, q: str | None = Query(None, description="Cari berdasarkan nama"),
     groupId: int = Query(description="ID Group Trafo wajib"),

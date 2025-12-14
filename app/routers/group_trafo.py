@@ -2,6 +2,8 @@ from fastapi import Query, Depends, APIRouter
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models.user_model import User
+from app.dependencies.auth import get_current_user
 from app.schemas.group_trafo_scema import GroupTrafoCreate, GroupTrafoCombobox, GroupTrafo
 from app.services import group_trafo_service
 
@@ -28,5 +30,11 @@ def delete_group_trafo_by_id(id: int, db: Session = Depends(get_db)):
     return group_trafo_service.delete_group_trafo_by_id(id=id, db=db)
 
 @router.get("/group-trafo/combobox", response_model=list[GroupTrafoCombobox])
-def read_trafo_group_combobox(db: Session = Depends(get_db)):
-    return group_trafo_service.read_trafo_group_combobox(db=db)
+def read_trafo_group_combobox(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return group_trafo_service.read_trafo_group_combobox(
+        db=db,
+        current_user=current_user
+    )
