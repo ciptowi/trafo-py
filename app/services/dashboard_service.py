@@ -30,10 +30,10 @@ def forecast_vs_actual(id: int, db: Session):
     trafo = db.query(Trafo).filter(Trafo.id == id).first()
     if not trafo:
         raise HTTPException(status_code=404, detail="Trafo not found")
-    forecast_results = db.query(HasilForecast).filter(HasilForecast.id_trafo == id).limit(20).all()
+    forecast_results = db.query(HasilForecast).filter(HasilForecast.id_trafo == id).order_by(HasilForecast.tanggal_forecast.asc()).limit(20).all()
     if not forecast_results:
         raise HTTPException(status_code=404, detail="Trafo Forecast not found")
-    calculated_results = db.query(HasilKalkulasi).filter(HasilKalkulasi.id_trafo == id).limit(20).all()
+    calculated_results = db.query(HasilKalkulasi).filter(HasilKalkulasi.id_trafo == id).order_by(HasilKalkulasi.waktu_kalkulasi.desc()).limit(20).all()
     if not calculated_results:
         raise HTTPException(status_code=404, detail="Trafo Calculated not found")
     

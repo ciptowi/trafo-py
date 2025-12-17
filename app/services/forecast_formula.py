@@ -312,4 +312,4 @@ class ForecastFormula:
             self.db.rollback()
             raise HTTPException(status_code=500, detail=f"Error inserting hasil forecast: {e}")
 
-        return response_ok(data={"date": results[-1]["date"], "value": results[-1]["value"]}, message="Success")
+        return response_ok(data={"date": results[-1]["date"], "value": float(results[-1]["value"])/1000}, message="Success")
